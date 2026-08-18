@@ -2,6 +2,7 @@ import type { AnalysisReport } from "@/lib/analysis-types";
 import { SYSTEM_PROMPT } from "@/lib/analysis-prompt";
 
 const MODEL = "google/gemini-3.6-flash";
+const GOOGLE_MODEL = "gemini-2.5-flash";
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 export type AnalyzeRequest = { imageDataUrl: string; note?: string | undefined };
