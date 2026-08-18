@@ -408,6 +408,14 @@ export function Analyzer() {
             to keep a history.
           </p>
         </div>
+
+        {lastError?.includes("not configured") ? (
+          <p className="mt-3 text-sm text-amber-600 dark:text-amber-400">
+            Deploying outside Lovable? Set{" "}
+            <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">GEMINI_API_KEY</code>{" "}
+            in your hosting provider's environment variables and redeploy.
+          </p>
+        ) : null}
       </div>
 
       {loading ? (
