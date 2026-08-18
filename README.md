@@ -184,7 +184,7 @@ When this project is connected to GitHub and deployed on Netlify, the Lovable-ma
 3. Add a new variable:
    - Key: `GEMINI_API_KEY`
    - Value: your Gemini API key
-4. Make sure the key is set for **Production** (and optionally **Deploy Previews** and **Branch deploys**).
+4. Make sure the key is available to **Functions / Runtime** and set for **Production** (and optionally **Deploy Previews** and **Branch deploys**).
 5. Trigger a redeploy in Netlify.
 
 The app will then use `GEMINI_API_KEY` for AI analysis on Netlify, while continuing to work automatically in the Lovable preview.
