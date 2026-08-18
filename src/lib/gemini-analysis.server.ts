@@ -71,7 +71,11 @@ async function analyzeWithGoogleKey(
             ],
           },
         ],
-        generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
+        generationConfig: {
+          temperature: 0.4,
+          responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
+        },
       }),
     },
   );

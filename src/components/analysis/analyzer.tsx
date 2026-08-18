@@ -27,7 +27,9 @@ import type { AnalysisReport } from "@/lib/analysis-types";
 import { analyzeImageViaApi } from "@/lib/analysis-api";
 import { downloadReportPdf } from "@/lib/report-pdf";
 
-const MAX_BYTES = 6 * 1024 * 1024;
+// Base64 adds roughly 33% to the request; keep the encoded body below
+// Netlify's synchronous function payload limit.
+const MAX_BYTES = 4 * 1024 * 1024;
 
 function Section({
   icon: Icon,
@@ -294,7 +296,7 @@ export function Analyzer() {
       return;
     }
     if (file.size > MAX_BYTES) {
-      toast.error("Image must be under 6MB.");
+      toast.error("Image must be under 4MB.");
       return;
     }
     const reader = new FileReader();
@@ -367,7 +369,7 @@ export function Analyzer() {
               </span>
               <p className="font-medium">Drop a crop, fruit, seed or soil photo here</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                PNG, JPG or WEBP up to 6MB — no account needed
+                 PNG, JPG or WEBP up to 4MB — no account needed
               </p>
               <Button className="mt-4" onClick={() => inputRef.current?.click()}>
                 Choose image
