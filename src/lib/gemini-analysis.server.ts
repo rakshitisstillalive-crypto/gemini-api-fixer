@@ -106,7 +106,7 @@ export async function analyzeWithGemini(input: AnalyzeRequest): Promise<Analysis
 
   if (!lovableKey && !googleKey) {
     throw new AnalysisError(
-      "AI is not configured on this deployment. Add a GEMINI_API_KEY environment variable in your hosting provider (e.g. Netlify → Site settings → Environment variables) and redeploy.",
+      "AI is not configured. Add GEMINI_API_KEY to Netlify Site settings → Environment variables and redeploy.",
       500,
     );
   }
