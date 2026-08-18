@@ -285,6 +285,7 @@ export function Analyzer() {
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<AnalysisReport | null>(null);
+  const [lastError, setLastError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback((file: File) => {
@@ -300,6 +301,7 @@ export function Analyzer() {
     reader.onload = () => {
       setImageDataUrl(String(reader.result));
       setReport(null);
+      setLastError(null);
     };
     reader.readAsDataURL(file);
   }, []);
@@ -308,6 +310,7 @@ export function Analyzer() {
     if (!imageDataUrl) return;
     setLoading(true);
     setReport(null);
+    setLastError(null);
     try {
       const result = await analyzeImageViaApi({
         imageDataUrl,
@@ -316,7 +319,9 @@ export function Analyzer() {
       setReport(result);
       toast.success("Analysis complete.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Analysis failed. Please try again.");
+      const message = error instanceof Error ? error.message : "Analysis failed. Please try again.";
+      toast.error(message);
+      setLastError(message);
     } finally {
       setLoading(false);
     }
