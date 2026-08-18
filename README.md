@@ -175,6 +175,20 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
 - **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
+## Deploying to Netlify
+
+When this project is connected to GitHub and deployed on Netlify, the Lovable-managed `LOVABLE_API_KEY` is not available. The AI analysis falls back to a direct Gemini API call using a key you provide.
+
+1. Get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey).
+2. In your Netlify dashboard, go to **Site settings → Environment variables**.
+3. Add a new variable:
+   - Key: `GEMINI_API_KEY`
+   - Value: your Gemini API key
+4. Make sure the key is set for **Production** (and optionally **Deploy Previews** and **Branch deploys**).
+5. Trigger a redeploy in Netlify.
+
+The app will then use `GEMINI_API_KEY` for AI analysis on Netlify, while continuing to work automatically in the Lovable preview.
+
 ## Development
 
 Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
