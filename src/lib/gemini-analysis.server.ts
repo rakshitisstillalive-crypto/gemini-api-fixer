@@ -59,7 +59,7 @@ async function analyzeWithGoogleKey(
     `https://generativelanguage.googleapis.com/v1beta/models/${GOOGLE_MODEL}:generateContent`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey.trim() },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [
@@ -78,14 +78,40 @@ async function analyzeWithGoogleKey(
 
   if (!response.ok) {
     const body = await response.text();
-    console.error("Google AI error", response.status, body);
+    let providerMessage = "";
+    try {
+      const parsed = JSON.parse(body) as { error?: { message?: string } };
+      providerMessage = parsed.error?.message?.trim() ?? "";
+    } catch {
+      providerMessage = "";
+    }
+    console.error("Google AI error", response.status, providerMessage || body);
     if (response.status === 429) {
-      throw new AnalysisError("Too many requests — please try again shortly.", 429);
+      throw new AnalysisError(providerMessage || "Too many requests — please try again shortly.", 429);
     }
-    if (response.status === 401 || response.status === 403) {
-      throw new AnalysisError("The configured GEMINI_API_KEY was rejected by Google.", 502);
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      /api key not valid|api_key_invalid|permission denied/i.test(providerMessage)
+    ) {
+      throw new AnalysisError(
+        providerMessage || "The configured GEMINI_API_KEY was rejected by Google AI Studio.",
+        403,
+      );
     }
-    throw new AnalysisError("The analysis engine could not process this image.", 502);
+    if (response.status === 400) {
+      throw new AnalysisError(
+        providerMessage || "Google rejected the image analysis request. Check the image and API key restrictions.",
+        400,
+      );
+    }
+    if (response.status === 404) {
+      throw new AnalysisError(providerMessage || "The configured Gemini model is not available for this API key.", 502);
+    }
+    throw new AnalysisError(
+      providerMessage || "Google's analysis service is temporarily unavailable.",
+      response.status >= 500 ? 503 : 502,
+    );
   }
 
   const payload = (await response.json()) as {
@@ -99,10 +125,11 @@ async function analyzeWithGoogleKey(
 /** Runs the vision analysis and returns a structured report. */
 export async function analyzeWithGemini(input: AnalyzeRequest): Promise<AnalysisReport> {
   const lovableKey = process.env["LOVABLE_API_KEY"];
-  const googleKey =
+  const googleKey = (
     process.env["GEMINI_API_KEY"] ??
     process.env["GOOGLE_API_KEY"] ??
-    process.env["GOOGLE_GENERATIVE_AI_API_KEY"];
+    process.env["GOOGLE_GENERATIVE_AI_API_KEY"]
+  )?.trim();
 
   if (!lovableKey && !googleKey) {
     throw new AnalysisError(
@@ -121,11 +148,15 @@ export async function analyzeWithGemini(input: AnalyzeRequest): Promise<Analysis
     return analyzeWithGoogleKey(googleKey, input.imageDataUrl, note);
   }
 
+  if (!lovableKey) {
+    throw new AnalysisError("AI is not configured. Add GEMINI_API_KEY and redeploy.", 500);
+  }
+
   const response = await fetch(GATEWAY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": lovableKey!,
+      "Lovable-API-Key": lovableKey,
     },
     body: JSON.stringify({
       model: MODEL,
